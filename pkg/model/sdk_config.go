@@ -1,6 +1,6 @@
 package model
 
-import "flagsense-go-sdk/pkg/enums"
+import "github.com/flagsense/go-sdk/pkg/enums"
 
 // TODO: It will be initialized once, one should never be able to initialize it again or change the attributes
 type SDKConfig struct {

@@ -2,7 +2,7 @@ package config
 
 import (
 	"encoding/json"
-	"flagsense-go-sdk/third_party/assetmnger"
+	"github.com/flagsense/go-sdk/third_party/assetmnger"
 	"fmt"
 	"time"
 )

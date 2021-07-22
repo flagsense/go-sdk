@@ -1,4 +1,4 @@
-module flagsense-go-sdk
+module github.com/flagsense/go-sdk
 
 go 1.14
 

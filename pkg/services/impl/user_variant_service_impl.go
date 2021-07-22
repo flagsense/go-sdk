@@ -2,8 +2,8 @@ package impl
 
 import (
 	"errors"
-	"flagsense-go-sdk/pkg/dto"
-	"flagsense-go-sdk/pkg/util"
+	"github.com/flagsense/go-sdk/pkg/dto"
+	"github.com/flagsense/go-sdk/pkg/util"
 	"fmt"
 	"github.com/hashicorp/go-version"
 	"github.com/teltech/logger"

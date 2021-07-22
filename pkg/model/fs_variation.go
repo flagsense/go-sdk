@@ -2,7 +2,7 @@ package model
 
 import (
 	"errors"
-	"flagsense-go-sdk/pkg/util"
+	"github.com/flagsense/go-sdk/pkg/util"
 	"fmt"
 	"strings"
 )

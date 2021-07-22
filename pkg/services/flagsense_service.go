@@ -1,6 +1,6 @@
 package services
 
-import "flagsense-go-sdk/pkg/model"
+import "github.com/flagsense/go-sdk/pkg/model"
 
 type FlagsenseService interface {
 	InitializationComplete() bool

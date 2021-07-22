@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"flagsense-go-sdk/pkg/util"
+	"github.com/flagsense/go-sdk/pkg/util"
 	"fmt"
 	"io/ioutil"
 	"net"

@@ -1,8 +1,8 @@
 package enums
 
 import (
-	"flagsense-go-sdk/constants"
-	"flagsense-go-sdk/pkg/util"
+	"github.com/flagsense/go-sdk/constants"
+	"github.com/flagsense/go-sdk/pkg/util"
 )
 
 type Environment struct {

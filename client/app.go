@@ -2,11 +2,11 @@ package client
 
 import (
 	"errors"
-	"flagsense-go-sdk/constants"
-	"flagsense-go-sdk/pkg/enums"
-	"flagsense-go-sdk/pkg/model"
-	"flagsense-go-sdk/pkg/services"
-	"flagsense-go-sdk/pkg/services/impl"
+	"github.com/flagsense/go-sdk/constants"
+	"github.com/flagsense/go-sdk/pkg/enums"
+	"github.com/flagsense/go-sdk/pkg/model"
+	"github.com/flagsense/go-sdk/pkg/services"
+	"github.com/flagsense/go-sdk/pkg/services/impl"
 	"strings"
 	"sync"
 )
