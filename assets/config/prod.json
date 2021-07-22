@@ -1,0 +1,18 @@
+{
+  "services": {
+    "sdk-service": {
+      "http_endpoint": {
+        "url": "https://app-apis.flagsense.com/v1/sdk-service"
+      }
+    },
+    "events-service": {
+      "http_endpoint": {
+        "url": "https://app-events.flagsense.com/v1/events-service"
+      }
+    }
+  },
+  "constants": {
+    "polling-interval": 5,
+    "capture-events": true
+  }
+}
