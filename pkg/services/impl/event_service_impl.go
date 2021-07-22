@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/flagsense/go-sdk/config"
 	flagsenseHttpClient "github.com/flagsense/go-sdk/pkg/infrastructure/http"
 	"github.com/flagsense/go-sdk/pkg/model"
-	"fmt"
+	guuid "github.com/google/uuid"
 	"github.com/orcaman/concurrent-map"
-	"github.com/satori/go.uuid"
 	"github.com/teltech/logger"
 	"net/http"
 	"strconv"
@@ -64,7 +64,7 @@ func NewEventService(logger *logger.Log, sdkConfig *model.SDKConfig, client *htt
 		errorLock:      &sync.Mutex{},
 		client:         client,
 		config:         config,
-		machineId:      fmt.Sprintf("%s", uuid.NewV4()),
+		machineId:      guuid.NewString(),
 	}
 }
 
