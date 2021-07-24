@@ -2,9 +2,9 @@ package impl
 
 import (
 	"errors"
+	"fmt"
 	"github.com/flagsense/go-sdk/pkg/dto"
 	"github.com/flagsense/go-sdk/pkg/util"
-	"fmt"
 	"github.com/hashicorp/go-version"
 	"github.com/teltech/logger"
 	"github.com/twmb/murmur3"
@@ -181,14 +181,14 @@ func (uvs *UserVariantServiceImpl) matchesRule(userId string, attributes map[str
 }
 
 func (uvs *UserVariantServiceImpl) getAttributeValue(userId string, attributes map[string]interface{}, key string) interface{} {
+	val, attributesContainsKey := util.SafeGetValue(attributes, key)
+	if attributesContainsKey {
+		return val
+	}
 	if key == "id" {
 		return userId
 	}
-	if attributes == nil {
-		return nil
-	}
-	return attributes[key]
-
+	return nil
 }
 
 func (uvs *UserVariantServiceImpl) matchesFloat64Rule(rule *dto.RulesDTO, attributeValue float64) bool {
