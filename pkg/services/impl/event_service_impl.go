@@ -24,9 +24,12 @@ type EventServiceImpl struct {
 	requests       *cmap.ConcurrentMap
 	errors         *cmap.ConcurrentMap
 	data           *cmap.ConcurrentMap
+	codeBugs       *cmap.ConcurrentMap
 	timeslot       int64
 	variantMapLock *sync.Mutex
+	codeBugsLock   *sync.Mutex
 	errorLock      *sync.Mutex
+	refreshLock    *sync.Mutex
 	config         *config.Store
 	machineId      string
 }
@@ -36,6 +39,7 @@ type VariantsRequest struct {
 	SdkType     string                 `json:"sdkType"`
 	Environment string                 `json:"environment"`
 	Data        map[string]interface{} `json:"data"`
+	CodeBugs    map[string]interface{} `json:"codeBugs"`
 	Errors      map[string]interface{} `json:"errors"`
 	Time        int64                  `json:"time"`
 }
@@ -51,6 +55,7 @@ var MILLIS_IN_EVENT_FLUSH_INTERVAL int64 = EVENT_FLUSH_INTERVAL * 60 * 1000
 func NewEventService(logger *logger.Log, sdkConfig *model.SDKConfig, client *http.Client, config *config.Store) *EventServiceImpl {
 	errors := cmap.New()
 	data := cmap.New()
+	codeBugs := cmap.New()
 	timeslot := getTimeSlot(time.Now().Unix() * 1000)
 	requests := cmap.New()
 	return &EventServiceImpl{
@@ -59,9 +64,12 @@ func NewEventService(logger *logger.Log, sdkConfig *model.SDKConfig, client *htt
 		requests:       &requests,
 		errors:         &errors,
 		data:           &data,
+		codeBugs:		&codeBugs,
 		timeslot:       timeslot,
 		variantMapLock: &sync.Mutex{},
+		codeBugsLock:   &sync.Mutex{},
 		errorLock:      &sync.Mutex{},
+		refreshLock:    &sync.Mutex{},
 		client:         client,
 		config:         config,
 		machineId:      guuid.NewString(),
@@ -84,6 +92,9 @@ func (es *EventServiceImpl) Start(ctx context.Context) {
 }
 
 func (es *EventServiceImpl) AddEvaluationCount(flagId string, variantKey string) {
+	defer func() { //catch or finally
+	}()
+
 	if !es.config.Constants.CaptureEvents {
 		return
 	}
@@ -110,10 +121,12 @@ func (es *EventServiceImpl) AddEvaluationCount(flagId string, variantKey string)
 }
 
 func (es *EventServiceImpl) AddErrorsCount(flagId string) {
+	defer func() { //catch or finally
+	}()
+
 	if !es.config.Constants.CaptureEvents {
 		return
 	}
-
 	currentTimeSlot := getTimeSlot(time.Now().Unix() * 1000)
 	if currentTimeSlot != es.timeslot {
 		es.checkAndRefreshData(currentTimeSlot)
@@ -127,14 +140,43 @@ func (es *EventServiceImpl) AddErrorsCount(flagId string) {
 		es.errors.Set(flagId, val.(int64)+int64(1))
 	}
 	es.errorLock.Unlock()
+}
 
+func (es *EventServiceImpl) AddCodeBugsCount(flagId string, variantKey string)  {
+	defer func() { //catch or finally
+	}()
+
+	if !es.config.Constants.CaptureEvents {
+		return
+	}
+	currentTimeSlot := getTimeSlot(time.Now().Unix() * 1000)
+	if currentTimeSlot != es.timeslot {
+		es.checkAndRefreshData(currentTimeSlot)
+	}
+	variantMap, present := es.codeBugs.Get(flagId)
+	if !present {
+		absent := es.codeBugs.SetIfAbsent(flagId, cmap.New())
+		if absent {
+			variantMap, _ = es.codeBugs.Get(flagId)
+		}
+	}
+
+	es.codeBugsLock.Lock()
+	val, present := variantMap.(cmap.ConcurrentMap).Get(variantKey)
+	if !present {
+		variantMap.(cmap.ConcurrentMap).Set(variantKey, int64(1))
+	} else {
+		variantMap.(cmap.ConcurrentMap).Set(variantKey, val.(int64)+int64(1))
+	}
+	es.codeBugsLock.Unlock()
 }
 
 func (es *EventServiceImpl) checkAndRefreshData(timeslot int64) {
-	if timeslot == es.timeslot {
-		return
+	es.refreshLock.Lock()
+	if timeslot != es.timeslot {
+		es.refreshData(timeslot)
 	}
-	es.refreshData(timeslot)
+	es.refreshLock.Unlock()
 }
 
 func (es *EventServiceImpl) refreshData(currentTimeSlot int64) {
@@ -144,21 +186,26 @@ func (es *EventServiceImpl) refreshData(currentTimeSlot int64) {
 		Environment: es.sdkConfig.Environment,
 		SdkType:     SDK_TYPE,
 		Data:        make(map[string]interface{}),
+		CodeBugs:    make(map[string]interface{}),
 		Errors:      make(map[string]interface{}),
 		Time:        es.timeslot,
 	}
 	for key, value := range es.data.Items() {
 		variantRequest.Data[key] = value.(cmap.ConcurrentMap).Items()
 	}
+	for key, value := range es.codeBugs.Items() {
+		variantRequest.CodeBugs[key] = value.(cmap.ConcurrentMap).Items()
+	}
 	variantRequest.Errors = es.errors.Items()
 
-	if len(variantRequest.Data) != 0 || len(variantRequest.Errors) != 0 {
+	if len(variantRequest.Data) != 0 || len(variantRequest.CodeBugs) != 0 || len(variantRequest.Errors) != 0 {
 		es.requests.Set(strconv.FormatInt(es.timeslot, 10), variantRequest)
 	}
 
-	es.timeslot = currentTimeSlot
 	es.data.Clear()
+	es.codeBugs.Clear()
 	es.errors.Clear()
+	es.timeslot = currentTimeSlot
 }
 
 func (es *EventServiceImpl) Run(ctx context.Context) {

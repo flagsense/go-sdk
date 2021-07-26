@@ -209,3 +209,9 @@ func (fs *FlagsenseServiceImpl) MapVariation(fsFlag model.FSFlag, user model.FSU
 	fs.evaluateAndSetVariation(fsFlag, user, dto.JSON, result)
 	return *result
 }
+
+func (fs *FlagsenseServiceImpl) RecordCodeError(flagId string, variationKey string)  {
+	if strings.TrimSpace(flagId) != "" && strings.TrimSpace(variationKey) != "" {
+		fs.EventService.AddCodeBugsCount(flagId, variationKey)
+	}
+}

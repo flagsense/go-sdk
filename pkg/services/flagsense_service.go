@@ -11,4 +11,5 @@ type FlagsenseService interface {
 	IntegerVariation(fsFlag model.FSFlag, user model.FSUser) model.FSVariation
 	DecimalVariation(fsFlag model.FSFlag, user model.FSUser) model.FSVariation
 	MapVariation(fsFlag model.FSFlag, user model.FSUser) model.FSVariation
+	RecordCodeError(flagId string, variationKey string)
 }

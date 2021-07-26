@@ -9,4 +9,5 @@ type EventService interface {
 	AddEvaluationCount(flagId string, variantKey string)
 	AddErrorsCount(flagId string)
 	ShutdownHook(ctx context.Context)
+	AddCodeBugsCount(flagId string, variantKey string)
 }
